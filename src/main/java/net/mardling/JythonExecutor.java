@@ -52,12 +52,15 @@ public class JythonExecutor {
 		execute("/aws/console.jy",awsMap);
 		
 		//Azure
+<<<<<<< HEAD
 		ServiceManager manager = new ServiceManager();
 		
 		Map<String,Object> azMap = new HashMap<String,Object>();
 		azMap.put("manager", manager);
 		
 		execute("/azure/manager.jy", azMap);
+=======
+>>>>>>> branch 'master' of https://github.com/pvp2000/cloud.git
 		
 	}
 	
