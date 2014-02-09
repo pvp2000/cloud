@@ -1,0 +1,1 @@
+print manager.doCall(manager)

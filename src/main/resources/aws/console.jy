@@ -2,6 +2,6 @@ print "In EC2"
 
 print "Availablity Zones: " + str(ec2.describeAvailabilityZones().getAvailabilityZones().size())
 
-print "Reservations: " 
+print "Reservations: " + str(len(ec2.describeInstances().getReservations()))
 
-print len(ec2.describeInstances().getReservations())
+print "S3 Buckets: " + str(len(s3.listBuckets()))
