@@ -1,6 +1,7 @@
 package net.mardling.utils;
 
 import java.io.*;
+import java.net.URI;
 import java.net.URL;
 
 import javax.net.ssl.*;
@@ -10,6 +11,10 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Base64;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.client.ClientHttpRequest;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
@@ -53,6 +58,12 @@ public class ServiceManager {
 		out.close();
 		return store;
 	}
+	
+	
+	private void restTemplate() {
+		RestTemplate rest = new RestTemplate();
+	}
+	
 
 	/*
 	 * Used to get an SSL factory from the keystore on the fly - this is then
@@ -134,13 +145,13 @@ public class ServiceManager {
 			// manager.parseAvailablilityResponse(inputLine);
 			// System.out.println("The name " + manager.getName() +
 			// " is available: " + availability);
-			output= inputLine;
+			output = inputLine;
 		} catch (Exception ex) {
 			System.out.println(ex.getMessage());
 		} finally {
 			manager.deleteOutStoreFile();
 		}
-		
+
 		return output;
 	}
 
@@ -165,6 +176,20 @@ public class ServiceManager {
 		Element elementResult = (Element) nodeResult.item(0);
 		// use the text value to return a boolean value
 		return Boolean.parseBoolean(elementResult.getTextContent());
+	}
+
+	private Document parseResponse(String response)
+			throws ParserConfigurationException, SAXException, IOException {
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		DocumentBuilder db = dbf.newDocumentBuilder();
+
+		// read this into an input stream first and then load into xml document
+		@SuppressWarnings("deprecation")
+		StringBufferInputStream stream = new StringBufferInputStream(response);
+		Document doc = db.parse(stream);
+		doc.getDocumentElement().normalize();
+
+		return doc;
 	}
 
 	// Parses the string arguments into the class to set the details for the
@@ -245,4 +270,6 @@ public class ServiceManager {
 		} catch (Exception ex) {
 		}
 	}
+
+
 }
