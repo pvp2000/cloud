@@ -1,0 +1,7 @@
+print "In EC2"
+
+print "Availablity Zones: " + str(ec2.describeAvailabilityZones().getAvailabilityZones().size())
+
+print "Reservations: " 
+
+print len(ec2.describeInstances().getReservations())
