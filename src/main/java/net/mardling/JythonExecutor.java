@@ -6,6 +6,11 @@ import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.ClasspathPropertiesFileCredentialsProvider;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.AmazonEC2Client;
+import com.amazonaws.services.identitymanagement.model.Role;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.microsoft.windowsazure.serviceruntime.RoleEnvironment;
+import com.microsoft.windowsazure.serviceruntime.RoleInstance;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -38,9 +43,14 @@ public class JythonExecutor {
 		AWSCredentialsProvider credentialsProvider = new ClasspathPropertiesFileCredentialsProvider();
 
 		AmazonEC2 ec2 = new AmazonEC2Client(credentialsProvider);
+		AmazonS3 s3  = new AmazonS3Client(credentialsProvider);
 		
 		awsMap.put("ec2",ec2);
+		awsMap.put("s3", s3);
 		execute("/aws/console.jy",awsMap);
+		
+		//Azure
+		
 	}
 	
 	public static void execute(String path, Map<String, Object> objs) {
