@@ -1,13 +1,17 @@
 package net.mardling.azure;
 
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.springframework.stereotype.Component;
-
 @XmlRootElement(name="OperatingSystem")
-@Component
+@XmlAccessorType(XmlAccessType.FIELD)
 public class OperatingSystem {
+	
+	@XmlElement(name="Version")
 	private String version;
+	@XmlElement(name="Label")
 	private String label;
 	private boolean isDefault;
 	private boolean isActive;

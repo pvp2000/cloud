@@ -71,9 +71,6 @@ public class AzureRestTemplate {
 	public void restTemplate() {
 		try {
 		
-		//SSLSocketFactory sslFact = getFactory(getBase64Cert());
-		
-		
 		SSLSocketFactory factory = AzureRestTemplate.getFactory(AzureRestTemplate.getBase64Cert("src/main/resources/AzureCredentials.xml"), "output.txt");
 		X509HostnameVerifier verifier = new AllowAllHostnameVerifier();
 		
@@ -87,13 +84,6 @@ public class AzureRestTemplate {
 		//URI uri = new URI("https://management.core.windows.net/72e280a7-f53d-4199-be45-3063afec8240/operatingsystems");
 		URI uri = new URI("https://management.core.windows.net/72e280a7-f53d-4199-be45-3063afec8240");
 		
-		//HttpUriRequest req = new HttpGet(uri);
-		//req.setHeader("x-ms-version", "2012-03-01");
-		//HttpResponse resp = httpClient.execute(req);
-		
-		//System.out.println(resp.getStatusLine().getReasonPhrase());
-		
-		
 		ClientHttpRequestFactory connFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
 		RestTemplate rest = new RestTemplate(connFactory);
 		
@@ -102,22 +92,22 @@ public class AzureRestTemplate {
 		
 		rest.setInterceptors(Collections.singletonList((ClientHttpRequestInterceptor)addHeaders));
 		
-		List<HttpMessageConverter<?>> convs = rest.getMessageConverters();
-		
-		for(HttpMessageConverter conv : convs) {
-			System.out.println(conv.getClass().getName());
-			for(MediaType type : (List<MediaType>)conv.getSupportedMediaTypes()) {
-				System.out.println(type.getType() + type.getSubtype());
-			}
-		}
-		
-		Jaxb2RootElementHttpMessageConverter convert = new Jaxb2RootElementHttpMessageConverter();
+		Subscription sub=(Subscription)rest.getForObject(uri,Subscription.class);
 
 		
-		Subscription sub=(Subscription)rest.getForObject(uri,Subscription.class);
-	    //System.out.println(headers.getCacheControl());
+		System.out.println("Subscription Name:" + sub.getSubscriptionName());
+		System.out.println("Subscription ID:" + sub.getSubscriptionID());
 		
-		System.out.println("Subscription Name:" + sub.getSubscriptionID());
+		
+		uri = new URI("https://management.core.windows.net/72e280a7-f53d-4199-be45-3063afec8240/operatingsystems");
+		
+		OperatingSystems os =(OperatingSystems)rest.getForObject(uri, OperatingSystems.class);
+		
+		System.out.println("OS " + os.getOperatingSystems().size());
+		
+		for (OperatingSystem myOs : os.getOperatingSystems()) {
+			System.out.println(myOs.getVersion());
+		}
 		
 		
 		} catch(Exception e) {
