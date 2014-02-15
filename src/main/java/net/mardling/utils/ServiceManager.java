@@ -9,11 +9,19 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.http.client.HttpClient;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.scheme.SchemeSocketFactory;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.SingleClientConnManager;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Base64;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.CommonsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
@@ -60,8 +68,26 @@ public class ServiceManager {
 	}
 	
 	
-	private void restTemplate() {
-		RestTemplate rest = new RestTemplate();
+	public void restTemplate() {
+		try {
+		
+		//SSLSocketFactory sslFact = getFactory(getBase64Cert());
+		
+		SSLSocketFactory sf = getFactory(getBase64Cert());
+		Scheme httpsScheme = new Scheme("https", 443, (SchemeSocketFactory) sf);
+		SchemeRegistry schemeRegistry = new SchemeRegistry();
+		schemeRegistry.register(httpsScheme);
+
+		// apache HttpClient version >4.2 should use BasicClientConnectionManager
+		ClientConnectionManager cm = new SingleClientConnManager(schemeRegistry);
+		HttpClient httpClient = new DefaultHttpClient(cm);
+		
+		RestTemplate rest = new RestTemplate(new CommonsClientHttpRequestFactory());
+		
+		
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 
@@ -149,7 +175,7 @@ public class ServiceManager {
 		} catch (Exception ex) {
 			System.out.println(ex.getMessage());
 		} finally {
-			manager.deleteOutStoreFile();
+			//manager.deleteOutStoreFile();
 		}
 
 		return output;
@@ -271,5 +297,34 @@ public class ServiceManager {
 		}
 	}
 
+	
+	private String getBase64Cert() {
+		String certificate=null;
+		try {
+		this.setPublishSettingsFile("src/main/resources/AzureCredentials.xml");
+		this.setOutStore("output.txt");
+		this.setSubscriptionId("72e280a7-f53d-4199-be45-3063afec8240");
+		this.setName("Testjkfdlareqrewqrew");
+		// Step 1: Read in the .publishsettings file
+
+		File file = new File(this.getPublishSettingsFile());
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		DocumentBuilder db = dbf.newDocumentBuilder();
+		Document doc = db.parse(file);
+		doc.getDocumentElement().normalize();
+		// Step 2: Get the PublishProfile
+		NodeList ndPublishProfile = doc
+				.getElementsByTagName("PublishProfile");
+		Element publishProfileElement = (Element) ndPublishProfile.item(0);
+		// Step 3: Get the PublishProfile
+		certificate = publishProfileElement
+				.getAttribute("ManagementCertificate");
+		
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return certificate;
+	}
 
 }
