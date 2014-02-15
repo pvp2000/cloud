@@ -80,7 +80,6 @@ public class AzureSocketFactory {
 				BouncyCastleProvider.PROVIDER_NAME);
 		store.load(null, null);
 
-		System.out.println(base64Certificate);
 		// read in the value of the base 64 cert without a password (PBE can be
 		// applied afterwards if this is needed
 		InputStream sslInputStream = new ByteArrayInputStream(

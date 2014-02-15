@@ -25,30 +25,19 @@ public class AzureRestTemplateTest extends AzureRestTemplate {
 	public void testGetSubscription() {
 	
 		
-		try {
-			Subscription subs = template.getSubscription("72e280a7-f53d-4199-be45-3063afec8240");
-			System.out.println(subs.getSubscriptionName());
-		} catch (URISyntaxException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Subscription subs = template.getSubscription("72e280a7-f53d-4199-be45-3063afec8240");
+		System.out.println(subs.getSubscriptionName());
 	}
 	
 	@Test
 	public void testGetOperatingSystems() {
 
 		
-		try {
-			OperatingSystems os = template.getOperatingSystems("72e280a7-f53d-4199-be45-3063afec8240");
-			System.out.println("OS " + os.getOperatingSystems().size());
+		OperatingSystems os = template.getOperatingSystems("72e280a7-f53d-4199-be45-3063afec8240");
+		System.out.println("OS " + os.getOperatingSystems().size());
 
-			for (OperatingSystem myOs : os.getOperatingSystems()) {
-				System.out.println(myOs.getVersion());
-			}
-
-		} catch (URISyntaxException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		for (OperatingSystem myOs : os.getOperatingSystems()) {
+			System.out.println(myOs.getVersion());
 		}
 	}
 

@@ -1,1 +1,1 @@
-print manager.doCall(manager)
+print "This is a " + subscription.getSubscriptionName()
