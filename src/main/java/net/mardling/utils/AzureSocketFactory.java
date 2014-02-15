@@ -1,45 +1,65 @@
 package net.mardling.utils;
 
-import java.io.*;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.Security;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 
-import javax.net.ssl.*;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import net.mardling.azure.OperatingSystem;
-import net.mardling.azure.OperatingSystems;
-import net.mardling.azure.Subscription;
-
 import org.apache.http.client.HttpClient;
+import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.impl.client.HttpClients;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Base64;
 import org.springframework.http.client.ClientHttpRequestFactory;
-import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.X509HostnameVerifier;
-import org.springframework.web.client.RestTemplate;
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
-import java.security.*;
-import java.util.Collections;
+public class AzureSocketFactory {
 
-// TODO: Refactor cert store creation
-public class AzureRestTemplate {
+	public ClientHttpRequestFactory getRequestFactory() throws ConnectionFactoryCreationException {
 
-	private ClientHttpRequestFactory connFactory;
-
-	public AzureRestTemplate() {
+		ClientHttpRequestFactory connFactory=null;
 		try {
-			AzureSocketFactory factory = new AzureSocketFactory();
-			connFactory = factory.getRequestFactory();
+			SSLSocketFactory factory = getFactory(
+					getBase64Cert("src/main/resources/AzureCredentials.xml"),
+					"output.txt");
+			X509HostnameVerifier verifier = new AllowAllHostnameVerifier();
 
-		} catch (Exception | ConnectionFactoryCreationException e) {
-               e.printStackTrace();
+			SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
+					factory, verifier);
+
+			HttpClient httpClient = HttpClients.custom()
+					.setSSLSocketFactory(sslsf).build();
+			connFactory = new HttpComponentsClientHttpRequestFactory(
+					httpClient);
+			
+			return connFactory;
+		} catch (UnrecoverableKeyException | KeyManagementException
+				| NoSuchAlgorithmException | KeyStoreException
+				| NoSuchProviderException | CertificateException | IOException e) {
+			
+			e.printStackTrace();
+			throw new ConnectionFactoryCreationException();
 		}
 
 	}
@@ -53,7 +73,8 @@ public class AzureRestTemplate {
 	 * and password
 	 */
 	private static KeyStore createKeyStorePKCS12(String base64Certificate,
-			String outstore) throws Exception {
+			String outstore) throws KeyStoreException, NoSuchProviderException,
+			NoSuchAlgorithmException, CertificateException, IOException {
 		Security.addProvider(new BouncyCastleProvider());
 		KeyStore store = KeyStore.getInstance("PKCS12",
 				BouncyCastleProvider.PROVIDER_NAME);
@@ -73,83 +94,16 @@ public class AzureRestTemplate {
 		return store;
 	}
 
-	private RestTemplate getAzureTemplate(ClientHttpRequestFactory factory) {
-		RestTemplate rest = new RestTemplate(connFactory);
-
-		CustomHeaderInterceptor addHeaders = new CustomHeaderInterceptor();
-		addHeaders.addHeader("x-ms-version", "2012-03-01");
-
-		rest.setInterceptors(Collections
-				.singletonList((ClientHttpRequestInterceptor) addHeaders));
-		
-		return rest;
-
-	}
-
-	
-	public Subscription getSubscription(String subsID) throws URISyntaxException {
-		URI uri = new URI("https://management.core.windows.net/" + subsID);
-
-
-		RestTemplate rest = getAzureTemplate(connFactory);
-
-		Subscription sub = (Subscription) rest.getForObject(uri,
-				Subscription.class);
-		
-		return sub;
-	}
-	
-	public OperatingSystems getOperatingSystems(String subsID) throws URISyntaxException {
-		URI uri = new URI("https://management.core.windows.net/" + subsID + "/operatingsystems");
-
-		RestTemplate rest = getAzureTemplate(connFactory);
-		
-		OperatingSystems os = (OperatingSystems) rest.getForObject(uri,OperatingSystems.class);
-		
-		return os;
-		
-	}
-	
-	public void restTemplate() {
-		try {
-
-			URI uri = new URI(
-					"https://management.core.windows.net/72e280a7-f53d-4199-be45-3063afec8240");
-
-
-			RestTemplate rest = getAzureTemplate(connFactory);
-
-			Subscription sub = (Subscription) rest.getForObject(uri,
-					Subscription.class);
-
-			System.out
-					.println("Subscription Name:" + sub.getSubscriptionName());
-			System.out.println("Subscription ID:" + sub.getSubscriptionID());
-
-			uri = new URI(
-					"https://management.core.windows.net/72e280a7-f53d-4199-be45-3063afec8240/operatingsystems");
-
-			OperatingSystems os = (OperatingSystems) rest.getForObject(uri,
-					OperatingSystems.class);
-
-			System.out.println("OS " + os.getOperatingSystems().size());
-
-			for (OperatingSystem myOs : os.getOperatingSystems()) {
-				System.out.println(myOs.getVersion());
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
 	/*
 	 * Used to get an SSL factory from the keystore on the fly - this is then
 	 * used in the request to the service management which will match the
 	 * .publishsettings imported certificate
 	 */
 	private static SSLSocketFactory getFactory(String base64Certificate,
-			String outStore) throws Exception {
+			String outStore) throws NoSuchAlgorithmException,
+			UnrecoverableKeyException, KeyStoreException,
+			KeyManagementException, NoSuchProviderException,
+			CertificateException, IOException {
 		KeyManagerFactory keyManagerFactory = KeyManagerFactory
 				.getInstance("SunX509");
 		KeyStore keyStore = createKeyStorePKCS12(base64Certificate, outStore);

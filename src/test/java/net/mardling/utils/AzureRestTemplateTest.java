@@ -12,15 +12,18 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class AzureRestTemplateTest extends AzureRestTemplate {
+	
+	private AzureRestTemplate template;
 
 	@Before
 	public void setUp() throws Exception {
+		template=new AzureRestTemplate();
 	}
 
 	
 	@Test
 	public void testGetSubscription() {
-		AzureRestTemplate template=new AzureRestTemplate();
+	
 		
 		try {
 			Subscription subs = template.getSubscription("72e280a7-f53d-4199-be45-3063afec8240");
@@ -33,7 +36,7 @@ public class AzureRestTemplateTest extends AzureRestTemplate {
 	
 	@Test
 	public void testGetOperatingSystems() {
-		AzureRestTemplate template=new AzureRestTemplate();
+
 		
 		try {
 			OperatingSystems os = template.getOperatingSystems("72e280a7-f53d-4199-be45-3063afec8240");
