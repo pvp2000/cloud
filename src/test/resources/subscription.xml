@@ -1,0 +1,19 @@
+<Subscription xmlns="http://schemas.microsoft.com/windowsazure"
+	xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<SubscriptionID>72e280a7-f53d-4199-be45-3063afec8240</SubscriptionID>
+	<SubscriptionName>Free Trial</SubscriptionName>
+	<SubscriptionStatus>Active</SubscriptionStatus>
+	<AccountAdminLiveEmailId>paulmardling@hotmail.com
+	</AccountAdminLiveEmailId>
+	<ServiceAdminLiveEmailId>paulmardling@hotmail.com
+	</ServiceAdminLiveEmailId>
+	<MaxCoreCount>20</MaxCoreCount>
+	<MaxStorageAccounts>20</MaxStorageAccounts>
+	<MaxHostedServices>20</MaxHostedServices>
+	<CurrentCoreCount>0</CurrentCoreCount>
+	<CurrentHostedServices>0</CurrentHostedServices>
+	<CurrentStorageAccounts>0</CurrentStorageAccounts>
+	<MaxVirtualNetworkSites>10</MaxVirtualNetworkSites>
+	<MaxLocalNetworkSites>10</MaxLocalNetworkSites>
+	<MaxDnsServers>9</MaxDnsServers>
+</Subscription>

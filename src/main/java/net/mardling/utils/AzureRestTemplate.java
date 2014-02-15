@@ -9,6 +9,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import net.mardling.azure.OperatingSystem;
 import net.mardling.azure.OperatingSystems;
+import net.mardling.azure.Subscription;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -19,9 +20,12 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Base64;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter;
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
@@ -80,7 +84,8 @@ public class AzureRestTemplate {
 		
 
 		
-		URI uri = new URI("https://management.core.windows.net/72e280a7-f53d-4199-be45-3063afec8240/operatingsystems");
+		//URI uri = new URI("https://management.core.windows.net/72e280a7-f53d-4199-be45-3063afec8240/operatingsystems");
+		URI uri = new URI("https://management.core.windows.net/72e280a7-f53d-4199-be45-3063afec8240");
 		
 		//HttpUriRequest req = new HttpGet(uri);
 		//req.setHeader("x-ms-version", "2012-03-01");
@@ -92,17 +97,27 @@ public class AzureRestTemplate {
 		ClientHttpRequestFactory connFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
 		RestTemplate rest = new RestTemplate(connFactory);
 		
-		HttpHeaders headers = new HttpHeaders();
-		headers.add("x-ms-version", "2012-03-01");
-		HttpEntity<String> entity = new HttpEntity(headers);
-		
 		CustomHeaderInterceptor addHeaders = new CustomHeaderInterceptor();
 		addHeaders.addHeader("x-ms-version", "2012-03-01");
 		
 		rest.setInterceptors(Collections.singletonList((ClientHttpRequestInterceptor)addHeaders));
 		
-		List<OperatingSystems> os=(List<OperatingSystems>)rest.getForEntity(uri,OperatingSystems.class);
+		List<HttpMessageConverter<?>> convs = rest.getMessageConverters();
+		
+		for(HttpMessageConverter conv : convs) {
+			System.out.println(conv.getClass().getName());
+			for(MediaType type : (List<MediaType>)conv.getSupportedMediaTypes()) {
+				System.out.println(type.getType() + type.getSubtype());
+			}
+		}
+		
+		Jaxb2RootElementHttpMessageConverter convert = new Jaxb2RootElementHttpMessageConverter();
+
+		
+		Subscription sub=(Subscription)rest.getForObject(uri,Subscription.class);
 	    //System.out.println(headers.getCacheControl());
+		
+		System.out.println("Subscription Name:" + sub.getSubscriptionID());
 		
 		
 		} catch(Exception e) {
